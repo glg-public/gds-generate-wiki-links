@@ -51,7 +51,7 @@ runs:
       -- | -- | -- | -- | --
       EOF
       # Generate the links and table row for each service
-      for orders_file in $(find . -maxdepth 2 -type f -name "orders"); do
+      for orders_file in $(find . -maxdepth 2 -type f -name "orders" | sort); do
         unset SERVICE
         unset SERVICE_DIR_URL
         unset SERVICE_SUMO_DASHBOARD_URL

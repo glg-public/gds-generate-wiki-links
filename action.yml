@@ -22,7 +22,6 @@ runs:
   - name: Generate Wiki Links
     shell: bash
     run: |
-      set -e
       pushd ./code > /dev/null
       GITHUB_REMOTE="${{github.event.repository.ssh_url}}"
       GITHUB_WIKI_REMOTE=$(echo "${GITHUB_REMOTE}" | perl -pe 's|\.git$|\.wiki\.git|')
@@ -52,7 +51,6 @@ runs:
       -- | -- | -- | -- | --
       EOF
       # Generate the links and table row for each service
-      set -x
       for orders_file in $(find . -maxdepth 2 -type f -name "orders"); do
         unset SERVICE
         unset SERVICE_DIR_URL

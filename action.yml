@@ -28,7 +28,7 @@ runs:
       GITHUB_WIKI_REMOTE=$(echo "${GITHUB_REMOTE}" | perl -pe 's|\.git$|\.wiki\.git|')
       WIKI_DIR="../wiki"
       WIKI_HOME_PAGE="$WIKI_DIR/Home.md"
-      GITHUB_GDS_REMOTE="git@github.com:${{gds_repo}}.git"
+      GITHUB_GDS_REMOTE="git@github.com:${{inputs.gds_repo}}.git"
       GDS_DIR="../gds"
       [ ! -d "${WIKI_DIR}" ] && git clone "${GITHUB_WIKI_REMOTE}" "${WIKI_DIR}"
       [ ! -d "${GDS_DIR}" ] && git clone "${GITHUB_GDS_REMOTE}" "${GDS_DIR}"

@@ -52,7 +52,6 @@ runs:
       -- | -- | -- | -- | --
       EOF
       # Generate the links and table row for each service
-      set -e
       for orders_file in $(find . -maxdepth 2 -type f -name "orders"); do
         unset SERVICE
         unset SERVICE_DIR_URL
@@ -63,6 +62,7 @@ runs:
         unset GITHUB_REPOSITORY_NAME
         unset deploy_type
         SERVICE=$(basename $(dirname "${orders_file}"))
+        echo $SERVICE
         unset GITHUB_URL
         unset GITHUB_REPOSITORY_OWNER
         unset GITHUB_REPOSITORY_NAME

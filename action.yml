@@ -86,6 +86,7 @@ runs:
           ECR_REPO=$(cat "${orders_file}" | egrep '^dockerdeploy ' | awk '{print $2;}' | awk -F':' '{print $1;}')
           GITHUB_REPOSITORY_OWNER=$(echo "${ECR_REPO}" | perl -pe 's|github/(.*?)/.*?/.*|$1|')
           GITHUB_REPOSITORY_NAME=$(echo "${ECR_REPO}" | perl -pe 's|github/.*?/(.*?)/.*|$1|')
+          GITHUB_BRANCH=$(echo "${ECR_REPO}" | perl -pe 's|github/.*?/.*?/(.*)|$1|')
           if [ -n "${ECR_REPO}" ]; then
             deploy_type="dockerdeploy"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"

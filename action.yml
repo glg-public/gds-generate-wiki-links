@@ -39,6 +39,7 @@ runs:
         path: gds
 
     - name: Generate Wiki Links
+      shell: bash
       run: |
         set -e
         pushd ./code > /dev/null

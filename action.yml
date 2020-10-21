@@ -62,24 +62,21 @@ runs:
         unset GITHUB_REPOSITORY_NAME
         unset deploy_type
         SERVICE=$(basename $(dirname "${orders_file}"))
-        echo $SERVICE
         unset GITHUB_URL
         unset GITHUB_REPOSITORY_OWNER
         unset GITHUB_REPOSITORY_NAME
         GITHUB_URL=$(cat "${orders_file}" | egrep '^autodeploy ' | awk -F'#' '{print $1;}')
-        echo $GITHUB_URL
         GITHUB_BRANCH=$(cat "${orders_file}" | egrep '^autodeploy ' | awk -F'#' '{print $2;}')
         GITHUB_BRANCH=${GITHUB_BRANCH:-master}
-        echo $GITHUB_BRANCH
         eval $(bash -c "cat \"${orders_file}\" | grep HEALTHCHECK")
         GITHUB_REPOSITORY_OWNER=$(echo "${GITHUB_URL}" | perl -pe 's|.*github\.com[:/](.*?)/.*|$1|')
         GITHUB_REPOSITORY_NAME=$(echo "${GITHUB_URL}" | perl -pe 's|.*github\.com[:/].*?/(.*)\.git|$1|')
-        echo $GITHUB_REPOSITORY_NAME
         if [ -n "${GITHUB_REPOSITORY_OWNER}" ] \
         && [ -n "${GITHUB_REPOSITORY_NAME}" ]; then
           deploy_type="autodeploy"
           SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
           SERVICE_BUILD_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${{inputs.cluster_version}}-${{inputs.cluster_name}}-${SERVICE}--${GITHUB_BRANCH}/view?region=us-east-1"
+          echo $SERVICE_DIR_URL
         fi
         unset ECR_TAG
         unset ECR_REPO

@@ -82,8 +82,8 @@ runs:
         unset ECR_REPO
         unset GITHUB_REPOSITORY_OWNER
         unset GITHUB_REPOSITORY_NAME
+        cat "${orders_file}" | egrep '^dockerdeploy ' | awk -F':' '{print $2;}'
         ECR_TAG=$(cat "${orders_file}" | egrep '^dockerdeploy ' | awk -F':' '{print $2;}')
-        echo $ECR_TAG
         ECR_TAG=${ECR_TAG:-latest}
         ECR_REPO=$(cat "${orders_file}" | egrep '^dockerdeploy ' | awk '{print $2;}' | awk -F':' '{print $1;}')
         GITHUB_REPOSITORY_OWNER=$(echo "${ECR_REPO}" | perl -pe 's|github/(.*?)/.*?/.*|$1|')

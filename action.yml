@@ -102,7 +102,7 @@ runs:
       git config --local user.email "${{inputs.git_email}}"
       git config --local user.name "${{inputs.git_username}}"
       git add -A
-      git commit -m "Links update"
+      git commit -m "Links update" || true
       git push origin master
       popd > /dev/null
       pushd "$GDS_DIR" > /dev/null
@@ -111,6 +111,6 @@ runs:
       git config --local user.email "${{inputs.git_email}}"
       git config --local user.name "${{inputs.git_username}}"
       git add -A
-      git commit -m "Config update for ${REPO_NAME}"
+      git commit -m "Config update for ${REPO_NAME}" || true
       git push origin main
       popd > /dev/null

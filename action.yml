@@ -107,6 +107,7 @@ runs:
       popd > /dev/null
       pushd "$GDS_DIR" > /dev/null
       REPO_NAME=$(echo "${GITHUB_REPOSITORY}" | perl -pe 's|glg/||')
+      set -x
       cp $WIKI_HOME_PAGE ./clusterconfigs/$REPO_NAME
       git config --local user.email "${{inputs.git_email}}"
       git config --local user.name "${{inputs.git_username}}"

@@ -104,6 +104,7 @@ runs:
       git add -A
       git commit -m "Links update" || exit 0
       git push origin master
+      popd > /dev/null
       pushd "$GDS_DIR" > /dev/null
       REPO_NAME=$(echo "${GITHUB_REPOSITORY}" | perl -pe 's|glg/||')
       cp $WIKI_HOME_PAGE ./clusterconfigs/$REPO_NAME
@@ -112,3 +113,4 @@ runs:
       git add -A
       git commit -m "Config update for ${REPO_NAME}" || exit 0
       git push origin main
+      popd > /dev/null

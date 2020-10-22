@@ -98,12 +98,11 @@ runs:
         [ -z "$deploy_type" ] && continue
         echo "[${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL})" | tee -a "$WIKI_HOME_PAGE"
       done
-      set -x
       pushd "$WIKI_DIR" > /dev/null
       git config --local user.email "${{inputs.git_email}}"
       git config --local user.name "${{inputs.git_username}}"
       git add -A
-      git commit -m "Links update" || exit 0
+      git commit -m "Links update"
       git push origin master
       popd > /dev/null
       pushd "$GDS_DIR" > /dev/null
@@ -112,6 +111,6 @@ runs:
       git config --local user.email "${{inputs.git_email}}"
       git config --local user.name "${{inputs.git_username}}"
       git add -A
-      git commit -m "Config update for ${REPO_NAME}" || exit 0
+      git commit -m "Config update for ${REPO_NAME}"
       git push origin main
       popd > /dev/null

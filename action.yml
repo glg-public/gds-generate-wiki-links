@@ -23,6 +23,7 @@ runs:
     shell: bash
     run: |
       pushd ./code > /dev/null
+      ECS_REGION=us-east-1
       GITHUB_REMOTE="${{github.event.repository.ssh_url}}"
       GITHUB_WIKI_REMOTE=$(echo "${GITHUB_REMOTE}" | perl -pe 's|\.git$|\.wiki\.git|')
       WIKI_DIR="../wiki"
@@ -47,8 +48,8 @@ runs:
       EOF
       tee -a "$WIKI_HOME_PAGE" <<EOF
       ### Service Links
-      | Service | App HC | Deploy Logs | SumoLogic | ECS |
-      | --- | --- | --- | --- | --- |
+      | Service | App HC | Deploy Logs | SumoLogic | ECS | Orders |
+      | --- | --- | --- | --- | --- | --- |
       EOF
       # Generate the links and table row for each service
       for orders_file in $(find . -maxdepth 2 -type f -name "orders" | sort); do
@@ -93,13 +94,14 @@ runs:
           if [ -n "${ECR_REPO}" ]; then
             deploy_type="dockerdeploy"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
-            SERVICE_BUILD_LOGS_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/actions"
+            SERVICE_BUILD_LOGS_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/actions?query=workflow%3A\"Build+Image+and+Push+to+ECR\""
+            SERVICE_DEPLOY_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${{ inputs.cluster_version}}-${{ inputs.cluster_name }}-${SERVICE}/view?region=${ECS_REGION}"
           fi
         fi
         SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=lQbhHeuGZGWZWWGieu9m62KoH2g1NCrIXOckKoK7boUACqcaEQ5tkUxQ2DzT&f=&t=r&filters=Cluster*eq*${{inputs.cluster_name}}**Service*eq*${SERVICE}**TaskDefVersion*eq*%5C*"
         SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${{inputs.cluster_version}}-${{inputs.cluster_name}}_${SERVICE}/details"
         [ -z "$deploy_type" ] && continue
-        echo "| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) |" | tee -a "$WIKI_HOME_PAGE"
+        echo "| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | $([ "$deploy_type" = "dockerdeploy" ] && echo "[Action](${SERVICE_BUILD_LOGS_URL}) / [Pipeline](${SERVICE_DEPLOY_LOGS_URL})" || echo "[Link](${SERVICE_BUILD_LOGS_URL})") | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) |" | tee -a "$WIKI_HOME_PAGE"
       done
       pushd "$WIKI_DIR" > /dev/null
       git config --local user.email "${{inputs.git_email}}"

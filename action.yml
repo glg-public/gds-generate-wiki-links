@@ -33,7 +33,7 @@ runs:
       [ ! -d "${GDS_DIR}" ] && git clone "${GITHUB_GDS_REMOTE}" "${GDS_DIR}"
       # Generate Links to Sumo Dashboard per service
       # Generate Links to Sumo Dashboard per cluster
-      
+
       ECS_CLUSTER_CONSOLE_URL="https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/${{inputs.cluster_version}}-${{inputs.cluster_name}}/services"
       CLUSTER_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=lQbhHeuGZGWZWWGieu9m62KoH2g1NCrIXOckKoK7boUACqcaEQ5tkUxQ2DzT&f=&t=r&filters=Cluster*eq*${{inputs.cluster_name}}**Service*eq*%5C***TaskDefVersion*eq*%5C*"
       CLUSTER_CONFIG_CODEPIPELINE_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${{inputs.cluster_version}}-${{inputs.cluster_name}}-ccwatcher/view?region=us-east-1"
@@ -45,6 +45,7 @@ runs:
       [ECS Cluster](${ECS_CLUSTER_CONSOLE_URL}) | This takes you directly to the AWS ECS Cluster Dashboard
       [Sumo Cluster Dashboard](${CLUSTER_SUMO_DASHBOARD_URL}) | This a Sumo Logic log dashboard where you can view lots of information about this cluster. You can drill into each service using filters.
       EOF
+      set -x
       tee -a "$WIKI_HOME_PAGE" <<EOF
       ### Service Links
       Service | App HC | Deploy Logs | SumoLogic | ECS

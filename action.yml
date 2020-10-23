@@ -23,7 +23,6 @@ runs:
     shell: bash
     run: |
       pushd ./code > /dev/null
-      set -x
       ECS_REGION=us-east-1
       GITHUB_REMOTE="${{github.event.repository.ssh_url}}"
       GITHUB_WIKI_REMOTE=$(echo "${GITHUB_REMOTE}" | perl -pe 's|\.git$|\.wiki\.git|')

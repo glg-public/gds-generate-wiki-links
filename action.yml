@@ -45,7 +45,6 @@ runs:
       [ECS Cluster](${ECS_CLUSTER_CONSOLE_URL}) | This takes you directly to the AWS ECS Cluster Dashboard
       [Sumo Cluster Dashboard](${CLUSTER_SUMO_DASHBOARD_URL}) | This a Sumo Logic log dashboard where you can view lots of information about this cluster. You can drill into each service using filters.
       EOF
-      set -x
       tee -a "$WIKI_HOME_PAGE" <<EOF
       ### Service Links
       Service | App HC | Deploy Logs | SumoLogic | ECS

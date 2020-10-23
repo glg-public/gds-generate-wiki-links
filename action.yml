@@ -51,6 +51,7 @@ runs:
       | Service | App HC | Deploy Logs | SumoLogic | ECS | Orders |
       | --- | --- | --- | --- | --- | --- |
       EOF
+      set -x
       # Generate the links and table row for each service
       for orders_file in $(find . -maxdepth 2 -type f -name "orders" | sort); do
         unset SERVICE

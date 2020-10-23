@@ -95,7 +95,7 @@ runs:
           if [ -n "${ECR_REPO}" ]; then
             deploy_type="dockerdeploy"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
-            SERVICE_BUILD_LOGS_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/actions"
+            SERVICE_BUILD_LOGS_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/actions?query=workflow%3A\"Build+Image+and+Push+to+ECR\""
             SERVICE_DEPLOY_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${{ inputs.cluster_version}}-${{ inputs.cluster_name }}-${SERVICE}/view?region=${ECS_REGION}"
           fi
         fi

@@ -96,13 +96,13 @@ runs:
             deploy_type="dockerdeploy"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
             SERVICE_BUILD_LOGS_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/actions"
-            SERVICE_DEPLOY_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${{ inputs.cluster_version}}-${{ inputs.cluster_name }}-${SERVICE}/view?region=${ECS_REGION}
+            SERVICE_DEPLOY_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${{ inputs.cluster_version}}-${{ inputs.cluster_name }}-${SERVICE}/view?region=${ECS_REGION}"
           fi
         fi
         SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=lQbhHeuGZGWZWWGieu9m62KoH2g1NCrIXOckKoK7boUACqcaEQ5tkUxQ2DzT&f=&t=r&filters=Cluster*eq*${{inputs.cluster_name}}**Service*eq*${SERVICE}**TaskDefVersion*eq*%5C*"
         SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${{inputs.cluster_version}}-${{inputs.cluster_name}}_${SERVICE}/details"
         [ -z "$deploy_type" ] && continue
-        echo "| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) $([ "$deploy_type" = "dockerdeploy"] && echo "/ [Link](${SERVICE_DEPLOY_LOGS_URL})") | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) |" | tee -a "$WIKI_HOME_PAGE"
+        echo "| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) $([ "$deploy_type" = "dockerdeploy" ] && echo "/ [Link](${SERVICE_DEPLOY_LOGS_URL})") | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) |" | tee -a "$WIKI_HOME_PAGE"
       done
       pushd "$WIKI_DIR" > /dev/null
       git config --local user.email "${{inputs.git_email}}"

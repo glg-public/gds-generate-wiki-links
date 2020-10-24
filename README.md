@@ -8,8 +8,8 @@ name: Generate Wiki Links
 on:
   push:
     branches:
-    - master
-    - main
+      - master
+      - main
 jobs:
   generate-wiki-links:
     runs-on: ubuntu-20.04

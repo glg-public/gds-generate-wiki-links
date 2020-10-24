@@ -8,7 +8,7 @@ name: Generate Wiki Links
 on:
   push:
     branches:
-    - $default-branch
+      - $default-branch
 jobs:
   generate-wiki-links:
     runs-on: ubuntu-20.04

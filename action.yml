@@ -48,7 +48,7 @@ runs:
         EOF
         tee -a "$WIKI_HOME_PAGE" <<EOF
         ### Service Links
-        | Service | App HC | Deploy Logs | SumoLogic | ECS | Orders |
+        | Service | App Healthcheck | Deploy Logs | SumoLogic | ECS | Orders |
         | --- | --- | --- | --- | --- | --- |
         EOF
         # Generate the links and table row for each service

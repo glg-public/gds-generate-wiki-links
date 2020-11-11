@@ -1,14 +1,15 @@
 # gds-generate-wiki-links
 This action generates a wiki directory of deployed services in a GDS cluster
 
-## Example Usage
+# Example Usage
 
 ```yml
 name: Generate Wiki Links
 on:
   push:
     branches:
-      - $default-branch
+    - master
+    - main
 jobs:
   generate-wiki-links:
     runs-on: ubuntu-20.04

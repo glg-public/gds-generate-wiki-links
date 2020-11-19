@@ -91,6 +91,8 @@ runs:
           GITHUB_REPOSITORY_NAME=$(echo "${ECR_REPO}" | perl -pe 's|github/.*?/(.*?)/.*|$1|')
           GITHUB_BRANCH=$(echo "${ECR_REPO}" | perl -pe 's|github/.*?/.*?/(.*)|$1|')
           eval $(bash -c "cat \"${orders_file}\" | grep HEALTHCHECK")
+          eval $(bash -c "cat \"${orders_file}\" | grep HEALTHCHECK_METHOD")
+          HEALTHCHECK_METHOD=${HEALTHCHECK_METHOD:-"HEAD"}
           if [ -n "${ECR_REPO}" ]; then
             deploy_type="dockerdeploy"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
@@ -101,7 +103,7 @@ runs:
         SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=lQbhHeuGZGWZWWGieu9m62KoH2g1NCrIXOckKoK7boUACqcaEQ5tkUxQ2DzT&f=&t=r&filters=Cluster*eq*${{inputs.cluster_name}}**Service*eq*${SERVICE}**TaskDefVersion*eq*%5C*"
         SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${{inputs.cluster_version}}-${{inputs.cluster_name}}_${SERVICE}/details"
         [ -z "$deploy_type" ] && continue
-        echo "| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glgresearch.com/health-proxy/healthSVG?url=https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) |" | tee -a "$WIKI_HOME_PAGE"
+        echo "| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glgresearch.com/health-proxy/healthSVG?url=https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |" | tee -a "$WIKI_HOME_PAGE"
       done
       pushd "$WIKI_DIR" > /dev/null
       git config --local user.email "${{inputs.git_email}}"

@@ -106,20 +106,20 @@ runs:
         SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${{inputs.cluster_version}}-${{inputs.cluster_name}}_${SERVICE}/details"
         if egrep --silent '^unpublished' "${orders_file}"; then
           ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) |"
-          UNPUBLISHED_SERVICES+=($ROW)
+          UNPUBLISHED_SERVICES+=("${ROW}")
           continue
         fi
         
         echo "| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glgresearch.com/health-proxy/healthSVG?url=https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |" | tee -a "$WIKI_HOME_PAGE"
       done
       tee -a "$WIKI_HOME_PAGE" <<EOF
-
+      
       ### Unpublished Containers
       | Service | Deploy Logs | SumoLogic | ECS | Orders |
       | --- | --- | --- | --- | --- |
       EOF
-      for row in $UNPUBLISHED_SERVICES; do
-        echo $row | tee -a "$WIKI_HOME_PAGE"
+      for ((i = 0; i < ${#UNPUBLISHED_SERVICES[@]}; i++)); do
+        echo "${UNPUBLISHED_SERVICES[$i]}" | tee -a "$WIKI_HOME_PAGE"
       done
 
       pushd "$WIKI_DIR" > /dev/null

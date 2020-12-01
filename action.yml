@@ -46,11 +46,7 @@ runs:
       | [ECS Cluster](${ECS_CLUSTER_CONSOLE_URL}) | This takes you directly to the AWS ECS Cluster Dashboard |
       | [Sumo Cluster Dashboard](${CLUSTER_SUMO_DASHBOARD_URL}) | This a Sumo Logic log dashboard where you can view lots of information about this cluster. You can drill into each service using filters. |
       EOF
-      tee -a "$WIKI_HOME_PAGE" <<EOF
-      ### Service Links
-      | Service | App Healthcheck | Deploy Logs | SumoLogic | ECS | Orders | Health |
-      | --- | --- | --- | --- | --- | --- | --- |
-      EOF
+      PUBLISHED_SERVICES=()
       UNPUBLISHED_SERVICES=()
       # Generate the links and table row for each service
       for orders_file in $(find . -maxdepth 2 -type f -name "orders" | sort); do
@@ -66,6 +62,8 @@ runs:
         unset GITHUB_URL
         unset GITHUB_REPOSITORY_OWNER
         unset GITHUB_REPOSITORY_NAME
+        unset ROW
+        unset ECS_SCHEDULED_TASK_CRON
         if egrep --silent '^autodeploy ' "${orders_file}"; then
           GITHUB_URL=$(cat "${orders_file}" | egrep '^autodeploy ' | awk -F'#' '{print $1;}')
           GITHUB_BRANCH=$(cat "${orders_file}" | egrep '^autodeploy ' | awk -F'#' '{print $2;}')
@@ -101,22 +99,56 @@ runs:
             SERVICE_DEPLOY_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${{ inputs.cluster_version}}-${{ inputs.cluster_name }}-${SERVICE}/view?region=${ECS_REGION}"
           fi
         fi
+        if [ -z "$deploy_type" ] && egrep --silent '^jobdeploy ' "${orders_file}"; then
+          ECR_TAG=$(cat "${orders_file}" | egrep '^jobdeploy ' | awk -F':' '{print $2;}')
+          ECR_TAG=${ECR_TAG:-latest}
+          ECR_REPO=$(cat "${orders_file}" | egrep '^jobdeploy ' | awk '{print $2;}' | awk -F':' '{print $1;}')
+          GITHUB_REPOSITORY_OWNER=$(echo "${ECR_REPO}" | perl -pe 's|github/(.*?)/.*?/.*|$1|')
+          GITHUB_REPOSITORY_NAME=$(echo "${ECR_REPO}" | perl -pe 's|github/.*?/(.*?)/.*|$1|')
+          GITHUB_BRANCH=$(echo "${ECR_REPO}" | perl -pe 's|github/.*?/.*?/(.*)|$1|')
+          eval "$(bash -c "cat \"${orders_file}\" | grep ECS_SCHEDULED_TASK_CRON")"
+          ECS_SCHEDULED_TASK_CRON=${ECS_SCHEDULED_TASK_CRON:-"cron(* * * * ? *)"}
+          if [ -n "${ECR_REPO}" ]; then
+            deploy_type="jobdeploy"
+            SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
+            SERVICE_BUILD_LOGS_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/actions?query=workflow%3A\"Build+Image+and+Push+to+ECR\""
+            SERVICE_DEPLOY_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${{ inputs.cluster_version}}-${{ inputs.cluster_name }}-${SERVICE}/view?region=${ECS_REGION}"
+          fi
+        fi
         [ -z "$deploy_type" ] && continue 
         SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=lQbhHeuGZGWZWWGieu9m62KoH2g1NCrIXOckKoK7boUACqcaEQ5tkUxQ2DzT&f=&t=r&filters=Cluster*eq*${{inputs.cluster_name}}**Service*eq*${SERVICE}**TaskDefVersion*eq*%5C*"
         SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${{inputs.cluster_version}}-${{inputs.cluster_name}}_${SERVICE}/details"
         if egrep --silent '^unpublished' "${orders_file}"; then
-          ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) |"
+          ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | [deprecated]() |"
           UNPUBLISHED_SERVICES+=("${ROW}")
           continue
         fi
+
+        if [ "$deploy_type" = "jobdeploy" ]; then
+          ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ${ECS_SCHEDULED_TASK_CRON} |"
+          UNPUBLISHED_SERVICES+=("${ROW}")
+          continue
+        fi 
         
-        echo "| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glgresearch.com/health-proxy/healthSVG?url=https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |" | tee -a "$WIKI_HOME_PAGE"
+        ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glgresearch.com/health-proxy/healthSVG?url=https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
+        PUBLISHED_SERVICES+=("${ROW}")
+
       done
-      tee -a "$WIKI_HOME_PAGE" <<EOF
+      [ ${#PUBLISHED_SERVICES[@]} -gt 0 ] && tee -a "$WIKI_HOME_PAGE" <<EOF
       
-      ### Unpublished Containers
-      | Service | Deploy Logs | SumoLogic | ECS | Orders |
-      | --- | --- | --- | --- | --- |
+      ### Service Links
+      | Service | App Healthcheck | Deploy Logs | SumoLogic | ECS | Orders | Health |
+      | --- | --- | --- | --- | --- | --- | --- |
+      EOF
+      for ((i = 0; i < ${#PUBLISHED_SERVICES[@]}; i++)); do
+        echo "${PUBLISHED_SERVICES[$i]}" | tee -a "$WIKI_HOME_PAGE"
+      done
+
+      [ ${#UNPUBLISHED_SERVICES[@]} -gt 0 ] && tee -a "$WIKI_HOME_PAGE" <<EOF
+      
+      ### Jobs
+      | Service | Deploy Logs | SumoLogic | ECS | Orders | Schedule |
+      | --- | --- | --- | --- | --- | --- |
       EOF
       for ((i = 0; i < ${#UNPUBLISHED_SERVICES[@]}; i++)); do
         echo "${UNPUBLISHED_SERVICES[$i]}" | tee -a "$WIKI_HOME_PAGE"

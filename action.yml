@@ -110,7 +110,7 @@ runs:
           GITHUB_REPOSITORY_OWNER=$(echo "${ECR_REPO}" | perl -pe 's|github/(.*?)/.*?/.*|$1|')
           GITHUB_REPOSITORY_NAME=$(echo "${ECR_REPO}" | perl -pe 's|github/.*?/(.*?)/.*|$1|')
           GITHUB_BRANCH=$(echo "${ECR_REPO}" | perl -pe 's|github/.*?/.*?/(.*)|$1|')
-          eval $(bash -c "cat \"${orders_file}\" | grep ECS_SCHEDULED_TASK_CRON")
+          eval "$(bash -c "cat \"${orders_file}\" | grep ECS_SCHEDULED_TASK_CRON")"
           ECS_SCHEDULED_TASK_CRON=${ECS_SCHEDULED_TASK_CRON:-"cron(* * * * ? *)"}
           if [ -n "${ECR_REPO}" ]; then
             deploy_type="jobdeploy"

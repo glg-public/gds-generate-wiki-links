@@ -46,11 +46,7 @@ runs:
       | [ECS Cluster](${ECS_CLUSTER_CONSOLE_URL}) | This takes you directly to the AWS ECS Cluster Dashboard |
       | [Sumo Cluster Dashboard](${CLUSTER_SUMO_DASHBOARD_URL}) | This a Sumo Logic log dashboard where you can view lots of information about this cluster. You can drill into each service using filters. |
       EOF
-      tee -a "$WIKI_HOME_PAGE" <<EOF
-      ### Service Links
-      | Service | App Healthcheck | Deploy Logs | SumoLogic | ECS | Orders | Health |
-      | --- | --- | --- | --- | --- | --- | --- |
-      EOF
+      PUBLISHED_SERVICES=()
       UNPUBLISHED_SERVICES=()
       # Generate the links and table row for each service
       for orders_file in $(find . -maxdepth 2 -type f -name "orders" | sort); do
@@ -134,8 +130,20 @@ runs:
           continue
         fi 
         
-        echo "| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glgresearch.com/health-proxy/healthSVG?url=https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |" | tee -a "$WIKI_HOME_PAGE"
+        ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glgresearch.com/health-proxy/healthSVG?url=https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
+        PUBLISHED_SERVICES+=("${ROW}")
+
       done
+      [ ${#PUBLISHED_SERVICES[@]} -gt 0 ] && tee -a "$WIKI_HOME_PAGE" <<EOF
+      
+      ### Service Links
+      | Service | App Healthcheck | Deploy Logs | SumoLogic | ECS | Orders | Health |
+      | --- | --- | --- | --- | --- | --- | --- |
+      EOF
+      for ((i = 0; i < ${#PUBLISHED_SERVICES[@]}; i++)); do
+        echo "${PUBLISHED_SERVICES[$i]}" | tee -a "$WIKI_HOME_PAGE"
+      done
+
       [ ${#UNPUBLISHED_SERVICES[@]} -gt 0 ] && tee -a "$WIKI_HOME_PAGE" <<EOF
       
       ### Jobs

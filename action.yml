@@ -51,6 +51,7 @@ runs:
       | Service | App Healthcheck | Deploy Logs | SumoLogic | ECS | Orders | Health |
       | --- | --- | --- | --- | --- | --- | --- |
       EOF
+      UNPUBLISHED_SERVICES=()
       # Generate the links and table row for each service
       for orders_file in $(find . -maxdepth 2 -type f -name "orders" | sort); do
         unset SERVICE
@@ -100,11 +101,27 @@ runs:
             SERVICE_DEPLOY_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${{ inputs.cluster_version}}-${{ inputs.cluster_name }}-${SERVICE}/view?region=${ECS_REGION}"
           fi
         fi
+        [ -z "$deploy_type" ] && continue 
         SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=lQbhHeuGZGWZWWGieu9m62KoH2g1NCrIXOckKoK7boUACqcaEQ5tkUxQ2DzT&f=&t=r&filters=Cluster*eq*${{inputs.cluster_name}}**Service*eq*${SERVICE}**TaskDefVersion*eq*%5C*"
         SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${{inputs.cluster_version}}-${{inputs.cluster_name}}_${SERVICE}/details"
-        [ -z "$deploy_type" ] && continue
+        if egrep --silent '^unpublished' "${orders_file}"; then
+          ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) |"
+          UNPUBLISHED_SERVICES+=("${ROW}")
+          continue
+        fi
+        
         echo "| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glgresearch.com/health-proxy/healthSVG?url=https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |" | tee -a "$WIKI_HOME_PAGE"
       done
+      tee -a "$WIKI_HOME_PAGE" <<EOF
+      
+      ### Unpublished Containers
+      | Service | Deploy Logs | SumoLogic | ECS | Orders |
+      | --- | --- | --- | --- | --- |
+      EOF
+      for row in $UNPUBLISHED_SERVICES; do
+        echo "${row}" | tee -a "$WIKI_HOME_PAGE"
+      done
+
       pushd "$WIKI_DIR" > /dev/null
       git config --local user.email "${{inputs.git_email}}"
       git config --local user.name "${{inputs.git_username}}"

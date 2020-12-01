@@ -128,7 +128,7 @@ runs:
           continue
         fi
 
-        if [ "$deploy_type" -eq "jobdeploy" ]; then
+        if [ "$deploy_type" = "jobdeploy" ]; then
           ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ${ECS_SCHEDULED_TASK_CRON} |"
           UNPUBLISHED_SERVICES+=("${ROW}")
           continue

@@ -119,7 +119,7 @@ runs:
         SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=lQbhHeuGZGWZWWGieu9m62KoH2g1NCrIXOckKoK7boUACqcaEQ5tkUxQ2DzT&f=&t=r&filters=Cluster*eq*${{inputs.cluster_name}}**Service*eq*${SERVICE}**TaskDefVersion*eq*%5C*"
         SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${{inputs.cluster_version}}-${{inputs.cluster_name}}_${SERVICE}/details"
         if egrep --silent '^unpublished' "${orders_file}"; then
-          ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | [deprecated]() |"
+          ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | [deprecated](https://services.glgresearch.com/know/glg-deployment-system-gds/scheduled-jobs/#command-autodeploy) |"
           UNPUBLISHED_SERVICES+=("${ROW}")
           continue
         fi

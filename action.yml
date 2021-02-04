@@ -137,6 +137,10 @@ runs:
       [ ${#PUBLISHED_SERVICES[@]} -gt 0 ] && tee -a "$WIKI_HOME_PAGE" <<EOF
       
       ### Service Links
+
+      _Note that when viewing healthcheck links on Github that the status is cached. Realtime healthcheck status can be viewed in the primary [Cluster Directory] location [here][Cluster Directory]._
+
+      [Cluster Directory]: https://services.glgresearch.com/know/glg-deployment-system-gds/cluster-directory/
       | Service | App Healthcheck | Deploy Logs | SumoLogic | ECS | Orders | Health |
       | --- | --- | --- | --- | --- | --- | --- |
       EOF

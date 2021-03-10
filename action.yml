@@ -4,12 +4,6 @@ inputs:
   gds_repo:
     description: "The Central GDS Cluster Directory repo, in org/repo format. e.g. glg/gds"
     required: true
-  cluster_name:
-    description: "The name of the cluster. e.g. i99"
-    required: true
-  cluster_version:
-    description: "The version of the cluster. e.g. v1"
-    required: true
   git_username:
     description: "git username to identify commits"
     required: true
@@ -30,14 +24,19 @@ runs:
       WIKI_HOME_PAGE="$WIKI_DIR/Home.md"
       GITHUB_GDS_REMOTE="git@github.com:${{inputs.gds_repo}}.git"
       GDS_DIR="../gds"
+
+      CLUSTER_NAME=$(echo "${{github.repository}}" | perl -pe 's|glg/gds.clusterconfig.||')
+      CLUSTER_VERSION=$(curl -s 'https://static.glgresearch.com/gds-cluster-map/cluster-map.json' | jq -r ".${CLUSTER_NAME}.clusterVersion")
+
+
       [ ! -d "${WIKI_DIR}" ] && git clone "${GITHUB_WIKI_REMOTE}" "${WIKI_DIR}"
       [ ! -d "${GDS_DIR}" ] && git clone "${GITHUB_GDS_REMOTE}" "${GDS_DIR}"
       # Generate Links to Sumo Dashboard per service
       # Generate Links to Sumo Dashboard per cluster
 
-      ECS_CLUSTER_CONSOLE_URL="https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/${{inputs.cluster_version}}-${{inputs.cluster_name}}/services"
-      CLUSTER_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=lQbhHeuGZGWZWWGieu9m62KoH2g1NCrIXOckKoK7boUACqcaEQ5tkUxQ2DzT&f=&t=r&filters=Cluster*eq*${{inputs.cluster_name}}**Service*eq*%5C***TaskDefVersion*eq*%5C*"
-      CLUSTER_CONFIG_CODEPIPELINE_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${{inputs.cluster_version}}-${{inputs.cluster_name}}-ccwatcher/view?region=us-east-1"
+      ECS_CLUSTER_CONSOLE_URL="https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/${CLUSTER_VERSION}-${CLUSTER_NAME}/services"
+      CLUSTER_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=lQbhHeuGZGWZWWGieu9m62KoH2g1NCrIXOckKoK7boUACqcaEQ5tkUxQ2DzT&f=&t=r&filters=Cluster*eq*${CLUSTER_NAME}**Service*eq*%5C***TaskDefVersion*eq*%5C*"
+      CLUSTER_CONFIG_CODEPIPELINE_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_VERSION}-${CLUSTER_NAME}-ccwatcher/view?region=us-east-1"
       tee "$WIKI_HOME_PAGE" <<EOF
       ### Cluster Links
       | Dashboard | Description |
@@ -75,7 +74,7 @@ runs:
           && [ -n "${GITHUB_REPOSITORY_NAME}" ]; then
             deploy_type="autodeploy"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
-            SERVICE_BUILD_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${{inputs.cluster_version}}-${{inputs.cluster_name}}-${SERVICE}--${GITHUB_BRANCH}/view?region=us-east-1"
+            SERVICE_BUILD_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_VERSION}-${CLUSTER_NAME}-${SERVICE}--${GITHUB_BRANCH}/view?region=us-east-1"
           fi
         fi
         unset ECR_TAG
@@ -116,8 +115,8 @@ runs:
           fi
         fi
         [ -z "$deploy_type" ] && continue 
-        SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=lQbhHeuGZGWZWWGieu9m62KoH2g1NCrIXOckKoK7boUACqcaEQ5tkUxQ2DzT&f=&t=r&filters=Cluster*eq*${{inputs.cluster_name}}**Service*eq*${SERVICE}**TaskDefVersion*eq*%5C*"
-        SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${{inputs.cluster_version}}-${{inputs.cluster_name}}_${SERVICE}/details"
+        SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=lQbhHeuGZGWZWWGieu9m62KoH2g1NCrIXOckKoK7boUACqcaEQ5tkUxQ2DzT&f=&t=r&filters=Cluster*eq*${CLUSTER_NAME}**Service*eq*${SERVICE}**TaskDefVersion*eq*%5C*"
+        SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${CLUSTER_VERSION}-${CLUSTER_NAME}_${SERVICE}/details"
         if egrep --silent '^unpublished' "${orders_file}"; then
           ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | [deprecated](https://services.glgresearch.com/know/glg-deployment-system-gds/scheduled-jobs/#command-autodeploy) |"
           UNPUBLISHED_SERVICES+=("${ROW}")
@@ -130,7 +129,7 @@ runs:
           continue
         fi 
         
-        ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glgresearch.com/health-proxy/healthSVG?url=https://${{inputs.cluster_name}}.glgresearch.com/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
+        ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${CLUSTER_NAME}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glgresearch.com/health-proxy/healthSVG?url=https://${CLUSTER_NAME}.glgresearch.com/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
         PUBLISHED_SERVICES+=("${ROW}")
 
       done

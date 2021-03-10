@@ -114,8 +114,8 @@ runs:
             SERVICE_DEPLOY_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${{ inputs.cluster_version}}-${{ inputs.cluster_name }}-${SERVICE}/view?region=${ECS_REGION}"
           fi
         fi
-        [ -z "$deploy_type" ] && continue 
-        SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=lQbhHeuGZGWZWWGieu9m62KoH2g1NCrIXOckKoK7boUACqcaEQ5tkUxQ2DzT&f=&t=r&filters=Cluster*eq*${CLUSTER_NAME}**Service*eq*${SERVICE}**TaskDefVersion*eq*%5C*"
+        [ -z "$deploy_type" ] && continue
+        SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=5a8FH5WEyve8ievoL7r8ev7TV3151y1vx1hK0xqzLLJMFvUJiESmk01bn2e5&f=&t=r&filters=service*eq*${SERVICE}**cluster*eq*${CLUSTER_NAME}"
         SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${CLUSTER_VERSION}-${CLUSTER_NAME}_${SERVICE}/details"
         if egrep --silent '^unpublished' "${orders_file}"; then
           ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | [deprecated](https://services.glgresearch.com/know/glg-deployment-system-gds/scheduled-jobs/#command-autodeploy) |"
@@ -127,14 +127,14 @@ runs:
           ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ${ECS_SCHEDULED_TASK_CRON} |"
           UNPUBLISHED_SERVICES+=("${ROW}")
           continue
-        fi 
-        
+        fi
+
         ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Link](https://${CLUSTER_NAME}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Link](${SERVICE_BUILD_LOGS_URL}) | [Link](${SERVICE_SUMO_DASHBOARD_URL}) | [Link](${SERVICE_ECS_CONSOLE_URL}) | [Link](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glgresearch.com/health-proxy/healthSVG?url=https://${CLUSTER_NAME}.glgresearch.com/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
         PUBLISHED_SERVICES+=("${ROW}")
 
       done
       [ ${#PUBLISHED_SERVICES[@]} -gt 0 ] && tee -a "$WIKI_HOME_PAGE" <<EOF
-      
+
       ### Service Links
 
       _Note: Healthcheck status is cached if viewed in Github. Realtime status can be viewed [here][Cluster Directory]._
@@ -149,7 +149,7 @@ runs:
       done
 
       [ ${#UNPUBLISHED_SERVICES[@]} -gt 0 ] && tee -a "$WIKI_HOME_PAGE" <<EOF
-      
+
       ### Jobs
       | Service | Deploy Logs | SumoLogic | ECS | Orders | Schedule |
       | --- | --- | --- | --- | --- | --- |

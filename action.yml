@@ -2,7 +2,7 @@ name: "Generate Wiki Links"
 description: "Generates a directory of services in the cluster in the repo's wiki"
 inputs:
   gds_repo:
-    description: "The Central GDS Cluster Directory repo, in org/repo format. e.g. glg/gds.china"
+    description: "The Central GDS Cluster Directory repo, in org/repo format. e.g. glg/gds"
     required: true
   git_username:
     description: "git username to identify commits"
@@ -16,8 +16,8 @@ runs:
   - name: Generate Wiki Links
     shell: bash
     run: |
+      echo Preparing the env
       pushd ./code > /dev/null
-      ECS_REGION=us-east-1
       GITHUB_REMOTE="${{github.event.repository.ssh_url}}"
       GITHUB_WIKI_REMOTE=$(echo "${GITHUB_REMOTE}" | perl -pe 's|\.git$|\.wiki\.git|')
       WIKI_DIR="../wiki"

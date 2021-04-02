@@ -31,22 +31,18 @@ runs:
 
       [ ! -d "${WIKI_DIR}" ] && git clone "${GITHUB_WIKI_REMOTE}" "${WIKI_DIR}"
       [ ! -d "${GDS_DIR}" ] && git clone "${GITHUB_GDS_REMOTE}" "${GDS_DIR}"
-      # Generate Links to Sumo Dashboard per service
-      # Generate Links to Sumo Dashboard per cluster
 
-      ECS_CLUSTER_CONSOLE_URL="https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/${CLUSTER_VERSION}-${CLUSTER_NAME}/services"
-      CLUSTER_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=lQbhHeuGZGWZWWGieu9m62KoH2g1NCrIXOckKoK7boUACqcaEQ5tkUxQ2DzT&f=&t=r&filters=Cluster*eq*${CLUSTER_NAME}**Service*eq*%5C***region*eq*us-east-1"
-      CLUSTER_CONFIG_CODEPIPELINE_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_VERSION}-${CLUSTER_NAME}-ccwatcher/view?region=us-east-1"
+      ECS_CLUSTER_CONSOLE_URL="https://console.amazonaws.cn//ecs/home?region=us-east-1#/clusters/${CLUSTER_VERSION}-${CLUSTER_NAME}/services"
+      CLUSTER_CONFIG_CODEPIPELINE_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_VERSION}-${CLUSTER_NAME}-ccwatcher/view?region=ap-northeast-1"
       tee "$WIKI_HOME_PAGE" <<EOF
       ### Cluster Links
       | Dashboard | Description |
       | --- | --- |
       | [Cluster Config Watcher](${CLUSTER_CONFIG_CODEPIPELINE_URL}) | This will take you to the AWS Codepipeline responsible for processing this Cluster Config. If changes to the environment do not seem to go out we might start looking here. |
       | [ECS Cluster](${ECS_CLUSTER_CONSOLE_URL}) | This takes you directly to the AWS ECS Cluster Dashboard |
-      | [Sumo Cluster Dashboard](${CLUSTER_SUMO_DASHBOARD_URL}) | This a Sumo Logic log dashboard where you can view lots of information about this cluster. You can drill into each service using filters. |
+      #| [Sumo Cluster Dashboard](${CLUSTER_SUMO_DASHBOARD_URL}) | This a Sumo Logic log dashboard where you can view lots of information about this cluster. You can drill into each service using filters. |
       EOF
       PUBLISHED_SERVICES=()
-      UNPUBLISHED_SERVICES=()
       # Generate the links and table row for each service
       for orders_file in $(find . -maxdepth 2 -type f -name "orders" | sort); do
         unset SERVICE
@@ -63,18 +59,18 @@ runs:
         unset GITHUB_REPOSITORY_NAME
         unset ROW
         unset ECS_SCHEDULED_TASK_CRON
-        if egrep --silent '^autodeploy ' "${orders_file}"; then
-          GITHUB_URL=$(cat "${orders_file}" | egrep '^autodeploy ' | awk -F'#' '{print $1;}')
-          GITHUB_BRANCH=$(cat "${orders_file}" | egrep '^autodeploy ' | awk -F'#' '{print $2;}')
+
+        if egrep --silent '^dockerbuild ' "${orders_file}"; then
+          GITHUB_URL=$(cat "${orders_file}" | egrep '^dockerbuild ' | awk -F'#' '{print $1;}')
+          GITHUB_BRANCH=$(cat "${orders_file}" | egrep '^dockerbuild ' | awk -F'#' '{print $2;}')
           GITHUB_BRANCH=${GITHUB_BRANCH:-master}
           eval $(bash -c "cat \"${orders_file}\" | grep HEALTHCHECK")
           GITHUB_REPOSITORY_OWNER=$(echo "${GITHUB_URL}" | perl -pe 's|.*github\.com[:/](.*?)/.*|$1|')
           GITHUB_REPOSITORY_NAME=$(echo "${GITHUB_URL}" | perl -pe 's|.*github\.com[:/].*?/(.*)\.git|$1|')
           if [ -n "${GITHUB_REPOSITORY_OWNER}" ] \
           && [ -n "${GITHUB_REPOSITORY_NAME}" ]; then
-            deploy_type="autodeploy"
+            deploy_type="dockerbuild"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
-            SERVICE_BUILD_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_VERSION}-${CLUSTER_NAME}-${SERVICE}--${GITHUB_BRANCH}/view?region=us-east-1"
           fi
         fi
         unset ECR_TAG
@@ -94,42 +90,14 @@ runs:
           if [ -n "${ECR_REPO}" ]; then
             deploy_type="dockerdeploy"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
-            SERVICE_BUILD_LOGS_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/actions?query=workflow%3A\"Build+Image+and+Push+to+ECR\""
-            SERVICE_DEPLOY_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${{ inputs.cluster_version}}-${{ inputs.cluster_name }}-${SERVICE}/view?region=${ECS_REGION}"
-          fi
-        fi
-        if [ -z "$deploy_type" ] && egrep --silent '^jobdeploy ' "${orders_file}"; then
-          ECR_TAG=$(cat "${orders_file}" | egrep '^jobdeploy ' | awk -F':' '{print $2;}')
-          ECR_TAG=${ECR_TAG:-latest}
-          ECR_REPO=$(cat "${orders_file}" | egrep '^jobdeploy ' | awk '{print $2;}' | awk -F':' '{print $1;}')
-          GITHUB_REPOSITORY_OWNER=$(echo "${ECR_REPO}" | perl -pe 's|github/(.*?)/.*?/.*|$1|')
-          GITHUB_REPOSITORY_NAME=$(echo "${ECR_REPO}" | perl -pe 's|github/.*?/(.*?)/.*|$1|')
-          GITHUB_BRANCH=$(echo "${ECR_REPO}" | perl -pe 's|github/.*?/.*?/(.*)|$1|')
-          eval "$(bash -c "cat \"${orders_file}\" | grep ECS_SCHEDULED_TASK_CRON")"
-          ECS_SCHEDULED_TASK_CRON=${ECS_SCHEDULED_TASK_CRON:-"cron(* * * * ? *)"}
-          if [ -n "${ECR_REPO}" ]; then
-            deploy_type="jobdeploy"
-            SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
-            SERVICE_BUILD_LOGS_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/actions?query=workflow%3A\"Build+Image+and+Push+to+ECR\""
-            SERVICE_DEPLOY_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${{ inputs.cluster_version}}-${{ inputs.cluster_name }}-${SERVICE}/view?region=${ECS_REGION}"
           fi
         fi
         [ -z "$deploy_type" ] && continue
+        SERVICE_BUILD_LOGS_URL="https://service.us2.sumologic.com/ui/#/dashboardv2/SHsFt6hiS0qCaMLC5YCizDbz7lSHmllkqGHLcuwSMsWLclIKCFUWPKEBnBVc?variables=cluster:${CLUSTER_NAME};service:${SERVICE}"
         SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=5a8FH5WEyve8ievoL7r8ev7TV3151y1vx1hK0xqzLLJMFvUJiESmk01bn2e5&f=&t=r&filters=service*eq*${SERVICE}**cluster*eq*${CLUSTER_NAME}"
         SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${CLUSTER_VERSION}-${CLUSTER_NAME}_${SERVICE}/details"
-        if egrep --silent '^unpublished' "${orders_file}"; then
-          ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Deploy Logs](${SERVICE_BUILD_LOGS_URL}) | [Sumo Logic](${SERVICE_SUMO_DASHBOARD_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | [deprecated](https://services.glgresearch.com/know/glg-deployment-system-gds/scheduled-jobs/#command-autodeploy) |"
-          UNPUBLISHED_SERVICES+=("${ROW}")
-          continue
-        fi
 
-        if [ "$deploy_type" = "jobdeploy" ]; then
-          ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Deploy Logs](${SERVICE_BUILD_LOGS_URL}) | [Sumo Logic](${SERVICE_SUMO_DASHBOARD_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ${ECS_SCHEDULED_TASK_CRON} |"
-          UNPUBLISHED_SERVICES+=("${ROW}")
-          continue
-        fi
-
-        ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Healthcheck](https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}) | [Deploy Logs](${SERVICE_BUILD_LOGS_URL}) | [Sumo Logic](${SERVICE_SUMO_DASHBOARD_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glginc.cn/health-proxy/healthSVG?url=https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
+        ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Healthcheck](https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}) | [Sumo Logic](${SERVICE_BUILD_LOGS_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glginc.cn/health-proxy/healthSVG?url=https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
         PUBLISHED_SERVICES+=("${ROW}")
 
       done
@@ -141,21 +109,11 @@ runs:
 
       [Cluster Directory]: https://services.glgresearch.com/know/glg-deployment-system-gds/cluster-directory/
 
-      | Service | App Healthcheck | Deploy Logs | SumoLogic | ECS | Orders | Health |
-      | --- | --- | --- | --- | --- | --- | --- |
+      | Service | App Healthcheck | SumoLogic | ECS | Orders | Health |
+      | --- | --- | --- | --- | --- | --- |
       EOF
       for ((i = 0; i < ${#PUBLISHED_SERVICES[@]}; i++)); do
         echo "${PUBLISHED_SERVICES[$i]}" | tee -a "$WIKI_HOME_PAGE"
-      done
-
-      [ ${#UNPUBLISHED_SERVICES[@]} -gt 0 ] && tee -a "$WIKI_HOME_PAGE" <<EOF
-
-      ### Jobs
-      | Service | Deploy Logs | SumoLogic | ECS | Orders | Schedule |
-      | --- | --- | --- | --- | --- | --- |
-      EOF
-      for ((i = 0; i < ${#UNPUBLISHED_SERVICES[@]}; i++)); do
-        echo "${UNPUBLISHED_SERVICES[$i]}" | tee -a "$WIKI_HOME_PAGE"
       done
 
       pushd "$WIKI_DIR" > /dev/null
@@ -165,12 +123,12 @@ runs:
       git commit -m "Links update" || true
       git push origin master
       popd > /dev/null
-      pushd "$GDS_DIR" > /dev/null
-      REPO_NAME=$(echo "${GITHUB_REPOSITORY}" | perl -pe 's|glg/||')
-      cp $WIKI_HOME_PAGE ./clusterconfigs/$REPO_NAME
-      git config --local user.email "${{inputs.git_email}}"
-      git config --local user.name "${{inputs.git_username}}"
-      git add -A
-      git commit -m "Config update for ${REPO_NAME}" || true
-      git push origin main
-      popd > /dev/null
+      #pushd "$GDS_DIR" > /dev/null
+      #REPO_NAME=$(echo "${GITHUB_REPOSITORY}" | perl -pe 's|glg/||')
+      #cp $WIKI_HOME_PAGE ./clusterconfigs/$REPO_NAME
+      #git config --local user.email "${{inputs.git_email}}"
+      #git config --local user.name "${{inputs.git_username}}"
+      #git add -A
+      #git commit -m "Config update for ${REPO_NAME}" || true
+      #git push origin main
+      #popd > /dev/null

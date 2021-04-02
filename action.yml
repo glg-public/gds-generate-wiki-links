@@ -16,7 +16,7 @@ runs:
   - name: Generate Wiki Links
     shell: bash
     run: |
-      echo Preparing the env
+      echo Preparing the env...
       pushd ./code > /dev/null
       GITHUB_REMOTE="${{github.event.repository.ssh_url}}"
       GITHUB_WIKI_REMOTE=$(echo "${GITHUB_REMOTE}" | perl -pe 's|\.git$|\.wiki\.git|')
@@ -32,7 +32,7 @@ runs:
       [ ! -d "${WIKI_DIR}" ] && git clone "${GITHUB_WIKI_REMOTE}" "${WIKI_DIR}"
       #[ ! -d "${GDS_DIR}" ] && git clone "${GITHUB_GDS_REMOTE}" "${GDS_DIR}"
 
-      ECS_CLUSTER_CONSOLE_URL="https://console.amazonaws.cn//ecs/home?region=us-east-1#/clusters/${CLUSTER_VERSION}-${CLUSTER_NAME}/services"
+      ECS_CLUSTER_CONSOLE_URL="https://console.amazonaws.cn//ecs/home?region=cn-north-1#/clusters/${CLUSTER_VERSION}-${CLUSTER_NAME}/services"
       CLUSTER_CONFIG_CODEPIPELINE_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_VERSION}-${CLUSTER_NAME}-ccwatcher/view?region=ap-northeast-1"
       tee "$WIKI_HOME_PAGE" <<EOF
       ### Cluster Links
@@ -59,6 +59,8 @@ runs:
         unset GITHUB_REPOSITORY_NAME
         unset ROW
         unset ECS_SCHEDULED_TASK_CRON
+
+        echo "Working on ${SERVICE}..."
 
         if egrep --silent '^dockerbuild ' "${orders_file}"; then
           GITHUB_URL=$(cat "${orders_file}" | egrep '^dockerbuild ' | awk -F'#' '{print $1;}')

@@ -28,6 +28,7 @@ runs:
       CLUSTER_NAME=$(echo "${{github.repository}}" | perl -pe 's|glg/gds.china.clusterconfig.||')
       CLUSTER_VERSION=$(curl -s 'https://static.glginc.cn/gds-cluster-map/cluster-map.json' | jq -r ".${CLUSTER_NAME}.clusterVersion")
 
+      echo start cloning...
 
       [ ! -d "${WIKI_DIR}" ] && git clone "${GITHUB_WIKI_REMOTE}" "${WIKI_DIR}"
       #[ ! -d "${GDS_DIR}" ] && git clone "${GITHUB_GDS_REMOTE}" "${GDS_DIR}"

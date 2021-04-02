@@ -30,7 +30,7 @@ runs:
 
 
       [ ! -d "${WIKI_DIR}" ] && git clone "${GITHUB_WIKI_REMOTE}" "${WIKI_DIR}"
-      [ ! -d "${GDS_DIR}" ] && git clone "${GITHUB_GDS_REMOTE}" "${GDS_DIR}"
+      #[ ! -d "${GDS_DIR}" ] && git clone "${GITHUB_GDS_REMOTE}" "${GDS_DIR}"
 
       ECS_CLUSTER_CONSOLE_URL="https://console.amazonaws.cn//ecs/home?region=us-east-1#/clusters/${CLUSTER_VERSION}-${CLUSTER_NAME}/services"
       CLUSTER_CONFIG_CODEPIPELINE_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_VERSION}-${CLUSTER_NAME}-ccwatcher/view?region=ap-northeast-1"

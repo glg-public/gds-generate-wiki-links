@@ -16,7 +16,6 @@ runs:
   - name: Generate Wiki Links
     shell: bash
     run: |
-      echo Preparing the env...
       pushd ./code > /dev/null
       GITHUB_REMOTE="${{github.event.repository.ssh_url}}"
       GITHUB_WIKI_REMOTE=$(echo "${GITHUB_REMOTE}" | perl -pe 's|\.git$|\.wiki\.git|')
@@ -26,9 +25,7 @@ runs:
       GDS_DIR="../gds"
 
       CLUSTER_NAME=$(echo "${{github.repository}}" | perl -pe 's|glg/gds.china.clusterconfig.||')
-      CLUSTER_VERSION=$(curl -s 'https://static.glginc.cn/gds-cluster-map/cluster-map.json' | jq -r ".${CLUSTER_NAME}.clusterVersion")
-
-      echo start cloning...
+      CLUSTER_VERSION=$(curl -s 'https://static.glginc.cn/gds-china-cluster-map/cluster-map.json' | jq -r ".${CLUSTER_NAME}.clusterVersion")
 
       [ ! -d "${WIKI_DIR}" ] && git clone "${GITHUB_WIKI_REMOTE}" "${WIKI_DIR}"
       #[ ! -d "${GDS_DIR}" ] && git clone "${GITHUB_GDS_REMOTE}" "${GDS_DIR}"

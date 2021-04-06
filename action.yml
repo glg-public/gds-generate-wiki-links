@@ -98,7 +98,7 @@ runs:
         SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=5a8FH5WEyve8ievoL7r8ev7TV3151y1vx1hK0xqzLLJMFvUJiESmk01bn2e5&f=&t=r&filters=service*eq*${SERVICE}**cluster*eq*${CLUSTER_NAME}"
         SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${CLUSTER_VERSION}-${CLUSTER_NAME}_${SERVICE}/details"
 
-        ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Healthcheck](https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}) | [Sumo Logic](${SERVICE_BUILD_LOGS_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glgresearch.com/health-proxy/healthSVG?url=https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
+        ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Healthcheck](https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}) | [Sumo Logic](${SERVICE_BUILD_LOGS_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glginc.cn/health-proxy/healthSVG?url=https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
         PUBLISHED_SERVICES+=("${ROW}")
 
       done

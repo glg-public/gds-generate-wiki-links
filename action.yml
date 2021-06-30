@@ -100,19 +100,13 @@ runs:
 
         # start handling the real healthcheck url
         eval $(bash -c "cat \"${orders_file}\" | grep GDS_FQDN")
-        if [ -n "${GDS_FQDN}" ]; then
-          echo "detect GDS_FQDN:$GDS_FQDN for $SERVICE"            
-          HEALTHCHECK_URL="https://${GDS_FQDN}/${SERVICE}${HEALTHCHECK}"
-        else
-          echo "No GDS_FQDN is detected for $SERVICE"
-          HEALTHCHECK_URL="https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}"
-        fi
+        HEALTHCHECK_URL="https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}"
         [ -z "$deploy_type" ] && continue
         SERVICE_BUILD_LOGS_URL="https://service.us2.sumologic.com/ui/#/dashboardv2/SHsFt6hiS0qCaMLC5YCizDbz7lSHmllkqGHLcuwSMsWLclIKCFUWPKEBnBVc?variables=cluster:${CLUSTER_NAME};service:${SERVICE}"
         SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=5a8FH5WEyve8ievoL7r8ev7TV3151y1vx1hK0xqzLLJMFvUJiESmk01bn2e5&f=&t=r&filters=service*eq*${SERVICE}**cluster*eq*${CLUSTER_NAME}"
         SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${CLUSTER_VERSION}-${CLUSTER_NAME}_${SERVICE}/details"
 
-        ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Healthcheck](${HEALTHCHECK_URL}) | [Sumo Logic](${SERVICE_BUILD_LOGS_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glginc.cn/health-proxy/healthSVG?url=https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
+        ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | ${FQDN} | [Healthcheck](${HEALTHCHECK_URL}) | [Sumo Logic](${SERVICE_BUILD_LOGS_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glginc.cn/health-proxy/healthSVG?url=https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
         PUBLISHED_SERVICES+=("${ROW}")
 
       done
@@ -124,8 +118,8 @@ runs:
 
       [Cluster Directory]: https://services.glgresearch.com/know/glg-deployment-system-gds/cluster-directory/
 
-      | Service | App Healthcheck | SumoLogic | ECS | Orders | Health |
-      | --- | --- | --- | --- | --- | --- |
+      | Service | FQDN Prefix | App Healthcheck | SumoLogic | ECS | Orders | Health |
+      | --- | --- | --- | --- | --- | --- | --- |
       EOF
       for ((i = 0; i < ${#PUBLISHED_SERVICES[@]}; i++)); do
         echo "${PUBLISHED_SERVICES[$i]}" | tee -a "$WIKI_HOME_PAGE"

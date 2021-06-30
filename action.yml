@@ -46,6 +46,7 @@ runs:
       for orders_file in $(find . -maxdepth 2 -type f -name "orders" | sort); do
         unset SERVICE
         unset SERVICE_DIR_URL
+        unset HEALTHCHECK_URL
         unset SERVICE_SUMO_DASHBOARD_URL
         unset SERVICE_BUILD_LOGS_URL
         unset SERVICE_ECS_CONSOLE_URL
@@ -87,10 +88,16 @@ runs:
           GITHUB_BRANCH=$(echo "${ECR_REPO}" | perl -pe 's|github/.*?/.*?/(.*)|$1|')
           eval $(bash -c "cat \"${orders_file}\" | grep HEALTHCHECK")
           eval $(bash -c "cat \"${orders_file}\" | grep HEALTHCHECK_METHOD")
+          eval $(bash -c "cat \"${orders_file}\" | grep GDS_FQDN")
           HEALTHCHECK_METHOD=${HEALTHCHECK_METHOD:-"HEAD"}
           if [ -n "${ECR_REPO}" ]; then
             deploy_type="dockerdeploy"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
+          fi
+          if [ -n "${GDS_FQDN}" ]; then            
+            HEALTHCHECK_URL="https://${GDS_FQDN}/${SERVICE}${HEALTHCHECK}"
+            else
+            HEALTHCHECK_URL="https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}"
           fi
         fi
         [ -z "$deploy_type" ] && continue
@@ -98,7 +105,7 @@ runs:
         SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=5a8FH5WEyve8ievoL7r8ev7TV3151y1vx1hK0xqzLLJMFvUJiESmk01bn2e5&f=&t=r&filters=service*eq*${SERVICE}**cluster*eq*${CLUSTER_NAME}"
         SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${CLUSTER_VERSION}-${CLUSTER_NAME}_${SERVICE}/details"
 
-        ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Healthcheck](https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}) | [Sumo Logic](${SERVICE_BUILD_LOGS_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glginc.cn/health-proxy/healthSVG?url=https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
+        ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Healthcheck](${HEALTHCHECK_URL}) | [Sumo Logic](${SERVICE_BUILD_LOGS_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glginc.cn/health-proxy/healthSVG?url=https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
         PUBLISHED_SERVICES+=("${ROW}")
 
       done

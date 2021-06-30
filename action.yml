@@ -59,6 +59,7 @@ runs:
         unset GITHUB_REPOSITORY_NAME
         unset ROW
         unset ECS_SCHEDULED_TASK_CRON
+        unset GDS_FQDN
 
         echo "Working on ${SERVICE}..."
 
@@ -90,14 +91,16 @@ runs:
           eval $(bash -c "cat \"${orders_file}\" | grep HEALTHCHECK_METHOD")
           eval $(bash -c "cat \"${orders_file}\" | grep GDS_FQDN")
           HEALTHCHECK_METHOD=${HEALTHCHECK_METHOD:-"HEAD"}
-          echo "detect GDS_FQDN:$GDS_FQDN for $SERVICE"
+          
           if [ -n "${ECR_REPO}" ]; then
             deploy_type="dockerdeploy"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
           fi
-          if [ -n "${GDS_FQDN}" ]; then            
+          if [ -n "${GDS_FQDN}" ]; then
+            echo "detect GDS_FQDN:$GDS_FQDN for $SERVICE"            
             HEALTHCHECK_URL="https://${GDS_FQDN}/${SERVICE}${HEALTHCHECK}"
-            else
+          else
+            echo "No GDS_FQDN is detected fro $SERVICE"
             HEALTHCHECK_URL="https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}"
           fi
         fi

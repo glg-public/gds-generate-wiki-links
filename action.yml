@@ -89,20 +89,23 @@ runs:
           GITHUB_BRANCH=$(echo "${ECR_REPO}" | perl -pe 's|github/.*?/.*?/(.*)|$1|')
           eval $(bash -c "cat \"${orders_file}\" | grep HEALTHCHECK")
           eval $(bash -c "cat \"${orders_file}\" | grep HEALTHCHECK_METHOD")
-          eval $(bash -c "cat \"${orders_file}\" | grep GDS_FQDN")
           HEALTHCHECK_METHOD=${HEALTHCHECK_METHOD:-"HEAD"}
           
           if [ -n "${ECR_REPO}" ]; then
             deploy_type="dockerdeploy"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
           fi
-          if [ -n "${GDS_FQDN}" ]; then
-            echo "detect GDS_FQDN:$GDS_FQDN for $SERVICE"            
-            HEALTHCHECK_URL="https://${GDS_FQDN}/${SERVICE}${HEALTHCHECK}"
-          else
-            echo "No GDS_FQDN is detected fro $SERVICE"
-            HEALTHCHECK_URL="https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}"
-          fi
+
+        fi
+
+        # start handling the real healthcheck url
+        eval $(bash -c "cat \"${orders_file}\" | grep GDS_FQDN")
+        if [ -n "${GDS_FQDN}" ]; then
+          echo "detect GDS_FQDN:$GDS_FQDN for $SERVICE"            
+          HEALTHCHECK_URL="https://${GDS_FQDN}/${SERVICE}${HEALTHCHECK}"
+        else
+          echo "No GDS_FQDN is detected for $SERVICE"
+          HEALTHCHECK_URL="https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}"
         fi
         [ -z "$deploy_type" ] && continue
         SERVICE_BUILD_LOGS_URL="https://service.us2.sumologic.com/ui/#/dashboardv2/SHsFt6hiS0qCaMLC5YCizDbz7lSHmllkqGHLcuwSMsWLclIKCFUWPKEBnBVc?variables=cluster:${CLUSTER_NAME};service:${SERVICE}"

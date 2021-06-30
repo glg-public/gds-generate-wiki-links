@@ -90,6 +90,7 @@ runs:
           eval $(bash -c "cat \"${orders_file}\" | grep HEALTHCHECK_METHOD")
           eval $(bash -c "cat \"${orders_file}\" | grep GDS_FQDN")
           HEALTHCHECK_METHOD=${HEALTHCHECK_METHOD:-"HEAD"}
+          echo "detect GDS_FQDN:$GDS_FQDN for $SERVICE"
           if [ -n "${ECR_REPO}" ]; then
             deploy_type="dockerdeploy"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"

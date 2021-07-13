@@ -38,7 +38,7 @@ runs:
       if [[ "${CLUSTER_NAME}" =~ ^j[0-9]+$ ]]; then
         CLUSTER_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/#/dashboardv2/hDMCqnSsQdMES9o2vQHuK1FV3NWM8yMWX0vnV4SZLBpXy7H3QyultRfmYULQ?variables=cluster:${CLUSTER_NAME}"
       else
-        CLUSTER_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=lQbhHeuGZGWZWWGieu9m62KoH2g1NCrIXOckKoK7boUACqcaEQ5tkUxQ2DzT&f=&t=r&filters=Cluster*eq*${CLUSTER_NAME}**Service*eq*%5C***region*eq*us-east-1"
+        CLUSTER_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/#/dashboardv2/9qLxrGlVgzUOLOBjBNPBzHVfx7YXviJDUGVsMPQ7sbBQQjlg7EGxxmntThda?variables=cluster:${CLUSTER_NAME};service:*;region:*"
       fi
       CLUSTER_CONFIG_CODEPIPELINE_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_VERSION}-${CLUSTER_NAME}-ccwatcher/view?region=us-east-1"
       tee "$WIKI_HOME_PAGE" <<EOF

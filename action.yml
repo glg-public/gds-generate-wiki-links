@@ -106,7 +106,7 @@ runs:
 
       _Note: Healthcheck status is cached if viewed in Github. Realtime status can be viewed [here][Cluster Directory]._
 
-      [Cluster Directory]: https://services.glgresearch.com/know/glg-deployment-system-gds/cluster-directory/
+      [Cluster Directory]: https://wiki.glginc.cn/gds-china/1.3_Cluster-Directory.html
 
       | Service | FQDN Prefix | App Healthcheck | SumoLogic | ECS | Orders | Health |
       | --- | --- | --- | --- | --- | --- | --- |

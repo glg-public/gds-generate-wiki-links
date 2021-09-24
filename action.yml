@@ -31,6 +31,7 @@ runs:
       [ ! -d "${GDS_DIR}" ] && git clone "${GITHUB_GDS_REMOTE}" "${GDS_DIR}"
 
       ECS_CLUSTER_CONSOLE_URL="https://console.amazonaws.cn//ecs/home?region=cn-north-1#/clusters/${CLUSTER_VERSION}-${CLUSTER_NAME}/services"
+      CLUSTER_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/#/dashboardv2/9qLxrGlVgzUOLOBjBNPBzHVfx7YXviJDUGVsMPQ7sbBQQjlg7EGxxmntThda?variables=cluster:${CLUSTER_NAME};service:*;region:*"
       CLUSTER_CONFIG_CODEPIPELINE_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_VERSION}-${CLUSTER_NAME}-ccwatcher/view?region=ap-northeast-1"
       tee "$WIKI_HOME_PAGE" <<EOF
       ### Cluster Links
@@ -38,9 +39,9 @@ runs:
       | --- | --- |
       | [Cluster Config Watcher](${CLUSTER_CONFIG_CODEPIPELINE_URL}) | This will take you to the AWS Codepipeline responsible for processing this Cluster Config. If changes to the environment do not seem to go out we might start looking here. |
       | [ECS Cluster](${ECS_CLUSTER_CONSOLE_URL}) | This takes you directly to the AWS ECS Cluster Dashboard |
+      | [Sumo Cluster Dashboard](${CLUSTER_SUMO_DASHBOARD_URL}) | This a Sumo Logic log dashboard where you can view lots of information about this cluster. You can drill into each service using filters. |
+      | [Cluster Config Repo](https://github.com/${{github.repository}}) | The Cluster Config repo on GitHub |
       EOF
-      # you need to move below line to above
-      #| [Sumo Cluster Dashboard](${CLUSTER_SUMO_DASHBOARD_URL}) | This a Sumo Logic log dashboard where you can view lots of information about this cluster. You can drill into each service using filters. |
       PUBLISHED_SERVICES=()
       # Generate the links and table row for each service
       for orders_file in $(find . -maxdepth 2 -type f -name "orders" | sort); do
@@ -63,19 +64,6 @@ runs:
 
         echo "Working on ${SERVICE}..."
 
-        if egrep --silent '^dockerbuild ' "${orders_file}"; then
-          GITHUB_URL=$(cat "${orders_file}" | egrep '^dockerbuild ' | awk -F'#' '{print $1;}')
-          GITHUB_BRANCH=$(cat "${orders_file}" | egrep '^dockerbuild ' | awk -F'#' '{print $2;}')
-          GITHUB_BRANCH=${GITHUB_BRANCH:-master}
-          eval $(bash -c "cat \"${orders_file}\" | grep HEALTHCHECK")
-          GITHUB_REPOSITORY_OWNER=$(echo "${GITHUB_URL}" | perl -pe 's|.*github\.com[:/](.*?)/.*|$1|')
-          GITHUB_REPOSITORY_NAME=$(echo "${GITHUB_URL}" | perl -pe 's|.*github\.com[:/].*?/(.*)\.git|$1|')
-          if [ -n "${GITHUB_REPOSITORY_OWNER}" ] \
-          && [ -n "${GITHUB_REPOSITORY_NAME}" ]; then
-            deploy_type="dockerbuild"
-            SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
-          fi
-        fi
         unset ECR_TAG
         unset ECR_REPO
         unset GITHUB_REPOSITORY_OWNER

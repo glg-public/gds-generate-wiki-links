@@ -86,6 +86,7 @@ runs:
         unset ECR_REPO
         unset GITHUB_REPOSITORY_OWNER
         unset GITHUB_REPOSITORY_NAME
+        unset GDS_FQDN
         if [ -z "$deploy_type" ] && egrep --silent '^dockerdeploy ' "${orders_file}"; then
           ECR_TAG=$(cat "${orders_file}" | egrep '^dockerdeploy ' | awk -F':' '{print $2;}')
           ECR_TAG=${ECR_TAG:-latest}
@@ -95,7 +96,9 @@ runs:
           GITHUB_BRANCH=$(echo "${ECR_REPO}" | perl -pe 's|github/.*?/.*?/(.*)|$1|')
           eval $(bash -c "cat \"${orders_file}\" | grep HEALTHCHECK")
           eval $(bash -c "cat \"${orders_file}\" | grep HEALTHCHECK_METHOD")
+          eval $(bash -c "cat \"${orders_file}\" | grep GDS_FQDN")
           HEALTHCHECK_METHOD=${HEALTHCHECK_METHOD:-"HEAD"}
+          GDS_FQDN=${GDS_FQDN:-$CLUSTER}
           if [ -n "${ECR_REPO}" ]; then
             deploy_type="dockerdeploy"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
@@ -112,6 +115,7 @@ runs:
           GITHUB_BRANCH=$(echo "${ECR_REPO}" | perl -pe 's|github/.*?/.*?/(.*)|$1|')
           eval "$(bash -c "cat \"${orders_file}\" | grep ECS_SCHEDULED_TASK_CRON")"
           ECS_SCHEDULED_TASK_CRON=${ECS_SCHEDULED_TASK_CRON:-"cron(* * * * ? *)"}
+          GDS_FQDN=""
           if [ -n "${ECR_REPO}" ]; then
             deploy_type="jobdeploy"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
@@ -135,7 +139,7 @@ runs:
           continue
         fi
 
-        ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Healthcheck](https://${CLUSTER_NAME}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Deploy Logs](${SERVICE_BUILD_LOGS_URL}) | [Sumo Logic](${SERVICE_SUMO_DASHBOARD_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glgresearch.com/health-proxy/healthSVG?url=https://${CLUSTER_NAME}.glgresearch.com/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
+        ROW="| ${CLUSTER_NAME} | ${GDS_FQDN} | [${SERVICE}](${SERVICE_DIR_URL}) | [Healthcheck](https://${CLUSTER_NAME}.glgresearch.com/${SERVICE}${HEALTHCHECK}) | [Deploy Logs](${SERVICE_BUILD_LOGS_URL}) | [Sumo Logic](${SERVICE_SUMO_DASHBOARD_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glgresearch.com/health-proxy/healthSVG?url=https://${CLUSTER_NAME}.glgresearch.com/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"
         PUBLISHED_SERVICES+=("${ROW}")
 
       done
@@ -147,7 +151,7 @@ runs:
 
       [Cluster Directory]: https://services.glgresearch.com/know/glg-deployment-system-gds/cluster-directory/
 
-      | Service | App Healthcheck | Deploy Logs | SumoLogic | ECS | Orders | Health |
+      | Cluster | FQDN | Service | App Healthcheck | Deploy Logs | SumoLogic | ECS | Orders | Health |
       | --- | --- | --- | --- | --- | --- | --- |
       EOF
       for ((i = 0; i < ${#PUBLISHED_SERVICES[@]}; i++)); do

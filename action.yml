@@ -31,7 +31,7 @@ runs:
       [ ! -d "${GDS_DIR}" ] && git clone "${GITHUB_GDS_REMOTE}" "${GDS_DIR}"
 
       ECS_CLUSTER_CONSOLE_URL="https://console.amazonaws.cn//ecs/home?region=cn-north-1#/clusters/${CLUSTER_VERSION}-${CLUSTER_NAME}/services"
-      CLUSTER_SUMO_DASHBOARD_URL="https://glgroup.sumologic.com/ui/#/dashboardv2/9qLxrGlVgzUOLOBjBNPBzHVfx7YXviJDUGVsMPQ7sbBQQjlg7EGxxmntThda?variables=cluster:${CLUSTER_NAME};service:*;region:*"
+      CLUSTER_SUMO_DASHBOARD_URL="https://glgroup.us2.sumologic.com/ui/#/dashboardv2/9qLxrGlVgzUOLOBjBNPBzHVfx7YXviJDUGVsMPQ7sbBQQjlg7EGxxmntThda?variables=cluster:${CLUSTER_NAME};service:*;region:*"
       CLUSTER_CONFIG_CODEPIPELINE_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_VERSION}-${CLUSTER_NAME}-ccwatcher/view?region=ap-northeast-1"
       tee "$WIKI_HOME_PAGE" <<EOF
       ### Cluster Links
@@ -93,7 +93,7 @@ runs:
         fi
         HEALTHCHECK_URL="https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}"
         [ -z "$deploy_type" ] && continue
-        SERVICE_SUMO_DASHBOARD_URL="https://glgroup.sumologic.com/ui/dashboard.html?k=5a8FH5WEyve8ievoL7r8ev7TV3151y1vx1hK0xqzLLJMFvUJiESmk01bn2e5&f=&t=r&filters=service*eq*${SERVICE}**cluster*eq*${CLUSTER_NAME}"
+        SERVICE_SUMO_DASHBOARD_URL="https://glgroup.us2.sumologic.com/ui/dashboard.html?k=5a8FH5WEyve8ievoL7r8ev7TV3151y1vx1hK0xqzLLJMFvUJiESmk01bn2e5&f=&t=r&filters=service*eq*${SERVICE}**cluster*eq*${CLUSTER_NAME}"
         SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${CLUSTER_VERSION}-${CLUSTER_NAME}_${SERVICE}/details"
 
         ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | ${GDS_FQDN} | [Healthcheck](${HEALTHCHECK_URL}) | [Sumo Logic](${SERVICE_SUMO_DASHBOARD_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ![Health](https://access.glginc.cn/health-proxy/healthSVG?url=https://${CLUSTER_NAME}.glginc.cn/${SERVICE}${HEALTHCHECK}&method=${HEALTHCHECK_METHOD}) |"

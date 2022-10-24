@@ -36,9 +36,9 @@ runs:
 
       ECS_CLUSTER_CONSOLE_URL="https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/${CLUSTER_VERSION}-${CLUSTER_NAME}/services"
       if [[ "${CLUSTER_NAME}" =~ ^j[0-9]+$ ]]; then
-        CLUSTER_SUMO_DASHBOARD_URL="https://glgroup.sumologic.com/ui/#/dashboardv2/hDMCqnSsQdMES9o2vQHuK1FV3NWM8yMWX0vnV4SZLBpXy7H3QyultRfmYULQ?variables=cluster:${CLUSTER_NAME}"
+        CLUSTER_SUMO_DASHBOARD_URL="https://glgroup.us2.sumologic.com/ui/#/dashboardv2/hDMCqnSsQdMES9o2vQHuK1FV3NWM8yMWX0vnV4SZLBpXy7H3QyultRfmYULQ?variables=cluster:${CLUSTER_NAME}"
       else
-        CLUSTER_SUMO_DASHBOARD_URL="https://glgroup.sumologic.com/ui/#/dashboardv2/9qLxrGlVgzUOLOBjBNPBzHVfx7YXviJDUGVsMPQ7sbBQQjlg7EGxxmntThda?variables=cluster:${CLUSTER_NAME};service:*;region:*"
+        CLUSTER_SUMO_DASHBOARD_URL="https://glgroup.us2.sumologic.com/ui/#/dashboardv2/9qLxrGlVgzUOLOBjBNPBzHVfx7YXviJDUGVsMPQ7sbBQQjlg7EGxxmntThda?variables=cluster:${CLUSTER_NAME};service:*;region:*"
       fi
       CLUSTER_CONFIG_CODEPIPELINE_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_VERSION}-${CLUSTER_NAME}-ccwatcher/view?region=us-east-1"
       tee "$WIKI_HOME_PAGE" <<EOF

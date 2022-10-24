@@ -36,9 +36,9 @@ runs:
 
       ECS_CLUSTER_CONSOLE_URL="https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/${CLUSTER_VERSION}-${CLUSTER_NAME}/services"
       if [[ "${CLUSTER_NAME}" =~ ^j[0-9]+$ ]]; then
-        CLUSTER_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/#/dashboardv2/hDMCqnSsQdMES9o2vQHuK1FV3NWM8yMWX0vnV4SZLBpXy7H3QyultRfmYULQ?variables=cluster:${CLUSTER_NAME}"
+        CLUSTER_SUMO_DASHBOARD_URL="https://glgroup.sumologic.com/ui/#/dashboardv2/hDMCqnSsQdMES9o2vQHuK1FV3NWM8yMWX0vnV4SZLBpXy7H3QyultRfmYULQ?variables=cluster:${CLUSTER_NAME}"
       else
-        CLUSTER_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/#/dashboardv2/9qLxrGlVgzUOLOBjBNPBzHVfx7YXviJDUGVsMPQ7sbBQQjlg7EGxxmntThda?variables=cluster:${CLUSTER_NAME};service:*;region:*"
+        CLUSTER_SUMO_DASHBOARD_URL="https://glgroup.sumologic.com/ui/#/dashboardv2/9qLxrGlVgzUOLOBjBNPBzHVfx7YXviJDUGVsMPQ7sbBQQjlg7EGxxmntThda?variables=cluster:${CLUSTER_NAME};service:*;region:*"
       fi
       CLUSTER_CONFIG_CODEPIPELINE_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_VERSION}-${CLUSTER_NAME}-ccwatcher/view?region=us-east-1"
       tee "$WIKI_HOME_PAGE" <<EOF
@@ -120,7 +120,7 @@ runs:
           fi
         fi
         [ -z "$deploy_type" ] && continue
-        SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/dashboard.html?k=5a8FH5WEyve8ievoL7r8ev7TV3151y1vx1hK0xqzLLJMFvUJiESmk01bn2e5&f=&t=r&filters=service*eq*${SERVICE}**cluster*eq*${CLUSTER_NAME}"
+        SERVICE_SUMO_DASHBOARD_URL="https://glgroup.sumologic.com/ui/dashboard.html?k=5a8FH5WEyve8ievoL7r8ev7TV3151y1vx1hK0xqzLLJMFvUJiESmk01bn2e5&f=&t=r&filters=service*eq*${SERVICE}**cluster*eq*${CLUSTER_NAME}"
         SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${CLUSTER_VERSION}-${CLUSTER_NAME}_${SERVICE}/details"
         if egrep --silent '^unpublished' "${orders_file}"; then
           ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Deploy Logs](${SERVICE_BUILD_LOGS_URL}) | [Sumo Logic](${SERVICE_SUMO_DASHBOARD_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | [deprecated](https://services.glgresearch.com/know/glg-deployment-system-gds/scheduled-jobs/#command-autodeploy) |"
@@ -129,7 +129,7 @@ runs:
         fi
 
         if [ "$deploy_type" = "jobdeploy" ]; then
-          SERVICE_SUMO_DASHBOARD_URL="https://service.us2.sumologic.com/ui/#/dashboardv2/qMMQ1yVnQqhrKnP55NI7AzdKmjQC7pXPXf1ETYUq3RP0ofxd75qSj4jgSM1D?variables=service:${SERVICE};cluster:${CLUSTER_NAME}"
+          SERVICE_SUMO_DASHBOARD_URL="https://glgroup.sumologic.com/ui/#/dashboardv2/qMMQ1yVnQqhrKnP55NI7AzdKmjQC7pXPXf1ETYUq3RP0ofxd75qSj4jgSM1D?variables=service:${SERVICE};cluster:${CLUSTER_NAME}"
           ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Deploy Logs](${SERVICE_BUILD_LOGS_URL}) | [Sumo Logic](${SERVICE_SUMO_DASHBOARD_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ${ECS_SCHEDULED_TASK_CRON} |"
           UNPUBLISHED_SERVICES+=("${ROW}")
           continue

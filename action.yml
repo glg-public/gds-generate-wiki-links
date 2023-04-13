@@ -120,7 +120,7 @@ runs:
         fi
         [ -z "$deploy_type" ] && continue
         SERVICE_SUMO_DASHBOARD_URL="https://glgroup.us2.sumologic.com/ui/dashboard.html?k=5a8FH5WEyve8ievoL7r8ev7TV3151y1vx1hK0xqzLLJMFvUJiESmk01bn2e5&f=&t=r&filters=service*eq*${SERVICE}**cluster*eq*${CLUSTER_NAME}"
-        SERVICE_ECS_CONSOLE_URL="https://${ECS_REGION}.console.aws.amazon.com/ecs/v2/clusters/${CLUSTER_NAME}/services/${CLUSTER_FULLNAME}_${SERVICE}/health?region=${ECS_REGION}"
+        SERVICE_ECS_CONSOLE_URL="https://${ECS_REGION}.console.aws.amazon.com/ecs/v2/clusters/${CLUSTER_FULLNAME}/services/${CLUSTER_FULLNAME}_${SERVICE}/health?region=${ECS_REGION}"
         if egrep --silent '^unpublished' "${orders_file}"; then
           ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Deploy Logs](${SERVICE_BUILD_LOGS_URL}) | [Sumo Logic](${SERVICE_SUMO_DASHBOARD_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | [deprecated](https://services.glgresearch.com/know/glg-deployment-system-gds/scheduled-jobs/#command-autodeploy) |"
           UNPUBLISHED_SERVICES+=("${ROW}")

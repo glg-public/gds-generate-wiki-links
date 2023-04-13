@@ -25,22 +25,21 @@ runs:
       GITHUB_GDS_REMOTE="git@github.com:${{inputs.gds_repo}}.git"
       GDS_DIR="../gds"
 
-      CLUSTER_NAME=$(echo "${{github.repository}}" | perl -pe 's|glg/gds.clusterconfig.||')
-      CLUSTER_VERSION=$(curl -s 'https://static.glgresearch.com/gds-cluster-map/cluster-map.json' | jq -r ".${CLUSTER_NAME}.clusterVersion")
-
+      CLUSTER_NAME="$(echo "${{github.repository}}" | perl -pe 's|glg/gds.clusterconfig.||')"
+      CLUSTER_FULLNAME="$(curl -s 'https://static.glgresearch.com/gds-cluster-map/cluster-map.json' | jq -r ".${CLUSTER_NAME}.clusterMap")"
 
       [ ! -d "${WIKI_DIR}" ] && git clone "${GITHUB_WIKI_REMOTE}" "${WIKI_DIR}"
       [ ! -d "${GDS_DIR}" ] && git clone "${GITHUB_GDS_REMOTE}" "${GDS_DIR}"
       # Generate Links to Sumo Dashboard per service
       # Generate Links to Sumo Dashboard per cluster
 
-      ECS_CLUSTER_CONSOLE_URL="https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/${CLUSTER_VERSION}-${CLUSTER_NAME}/services"
+      ECS_CLUSTER_CONSOLE_URL="https://${ECS_REGION}.console.aws.amazon.com/ecs/v2/clusters/${CLUSTER_FULLNAME}/services?region=${ECS_REGION}"
       if [[ "${CLUSTER_NAME}" =~ ^j[0-9]+$ ]]; then
         CLUSTER_SUMO_DASHBOARD_URL="https://glgroup.us2.sumologic.com/ui/#/dashboardv2/hDMCqnSsQdMES9o2vQHuK1FV3NWM8yMWX0vnV4SZLBpXy7H3QyultRfmYULQ?variables=cluster:${CLUSTER_NAME}"
       else
         CLUSTER_SUMO_DASHBOARD_URL="https://glgroup.us2.sumologic.com/ui/#/dashboardv2/9qLxrGlVgzUOLOBjBNPBzHVfx7YXviJDUGVsMPQ7sbBQQjlg7EGxxmntThda?variables=cluster:${CLUSTER_NAME};service:*;region:*"
       fi
-      CLUSTER_CONFIG_CODEPIPELINE_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_VERSION}-${CLUSTER_NAME}-ccwatcher/view?region=us-east-1"
+      CLUSTER_CONFIG_CODEPIPELINE_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_FULLNAME}-ccwatcher/view?region=us-east-1"
       tee "$WIKI_HOME_PAGE" <<EOF
       ### Cluster Links
       | Resource | Description |
@@ -79,7 +78,7 @@ runs:
           && [ -n "${GITHUB_REPOSITORY_NAME}" ]; then
             deploy_type="autodeploy"
             SERVICE_DIR_URL="https://github.com/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY_NAME}/tree/${GITHUB_BRANCH}"
-            SERVICE_BUILD_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_VERSION}-${CLUSTER_NAME}-${SERVICE}--${GITHUB_BRANCH}/view?region=us-east-1"
+            SERVICE_BUILD_LOGS_URL="https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${CLUSTER_FULLNAME}-${SERVICE}--${GITHUB_BRANCH}/view?region=us-east-1"
           fi
         fi
         unset ECR_TAG
@@ -121,7 +120,7 @@ runs:
         fi
         [ -z "$deploy_type" ] && continue
         SERVICE_SUMO_DASHBOARD_URL="https://glgroup.us2.sumologic.com/ui/dashboard.html?k=5a8FH5WEyve8ievoL7r8ev7TV3151y1vx1hK0xqzLLJMFvUJiESmk01bn2e5&f=&t=r&filters=service*eq*${SERVICE}**cluster*eq*${CLUSTER_NAME}"
-        SERVICE_ECS_CONSOLE_URL="${ECS_CLUSTER_CONSOLE_URL}/${CLUSTER_VERSION}-${CLUSTER_NAME}_${SERVICE}/details"
+        SERVICE_ECS_CONSOLE_URL="https://${ECS_REGION}.console.aws.amazon.com/ecs/v2/clusters/${CLUSTER_NAME}/services/${CLUSTER_FULLNAME}_${SERVICE}/health?region=${ECS_REGION}"
         if egrep --silent '^unpublished' "${orders_file}"; then
           ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Deploy Logs](${SERVICE_BUILD_LOGS_URL}) | [Sumo Logic](${SERVICE_SUMO_DASHBOARD_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | [deprecated](https://services.glgresearch.com/know/glg-deployment-system-gds/scheduled-jobs/#command-autodeploy) |"
           UNPUBLISHED_SERVICES+=("${ROW}")
@@ -130,6 +129,7 @@ runs:
 
         if [ "$deploy_type" = "jobdeploy" ]; then
           SERVICE_SUMO_DASHBOARD_URL="https://glgroup.us2.sumologic.com/ui/#/dashboardv2/qMMQ1yVnQqhrKnP55NI7AzdKmjQC7pXPXf1ETYUq3RP0ofxd75qSj4jgSM1D?variables=service:${SERVICE};cluster:${CLUSTER_NAME}"
+          SERVICE_ECS_CONSOLE_URL="https://${ECS_REGION}.console.aws.amazon.com/ecs/v2/clusters/${CLUSTER_FULLNAME}/scheduled-tasks/${CLUSTER_FULLNAME}-${SERVICE}-scheduled-task-event-rule?region=${ECS_REGION}"
           ROW="| [${SERVICE}](${SERVICE_DIR_URL}) | [Deploy Logs](${SERVICE_BUILD_LOGS_URL}) | [Sumo Logic](${SERVICE_SUMO_DASHBOARD_URL}) | [ECS](${SERVICE_ECS_CONSOLE_URL}) | [Orders](https://github.com/${GITHUB_REPOSITORY}/blob/main/${SERVICE}/orders) | ${ECS_SCHEDULED_TASK_CRON} |"
           UNPUBLISHED_SERVICES+=("${ROW}")
           continue
